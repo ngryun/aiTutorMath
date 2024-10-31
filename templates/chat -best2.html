@@ -1,0 +1,595 @@
+<!DOCTYPE html> 
+<html lang="en">  
+  
+<head>  
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preload stylesheet" as="style" href='https://fonts.googleapis.com/css2?family=Gothic+A1:wght@200&family=Nanum+Gothic&family=Nanum+Myeongjo&family=Noto+Sans+KR:wght@400&family=Roboto:wght@100&display=swap'>    
+    <title>민지의 chatbot</title>
+    <style>
+        /* 아이콘을 사용하기 위해 Font Awesome을 import합니다 */
+        @import url('https://fonts.googleapis.com/css?family=Lato:400,700');
+        @import url('https://fonts.googleapis.com/css?family=Do+Hyeon:400');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
+
+        @font-face {
+            font-family: 'NanumGothic';
+            font-style: normal;
+            src: url("/fonts/Nanum_Gothic/NanumGothic-Regular.ttf");
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border-radius: 25px;
+            padding: 5px 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat .chat-message textarea {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            font: 14px/22px "Lato", Arial, sans-serif;
+            border-radius: 25px;
+            resize: none;
+            margin-bottom: 0;
+            outline: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            cursor: pointer;
+            margin-right: 10px;
+            color: #003f8a;
+            font-size: 20px;
+        }
+
+        #image-upload {
+            display: none;
+        }
+
+        #send {
+            background: none;
+            border: none;
+            color: #003f8a;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        #send:hover {
+            color: #00509e;
+        }
+
+        .chat .chat-message {
+            padding: 10px 15px;
+            background-color: #a0c4ff;
+        }
+
+        .chat .chat-message textarea:focus {
+            outline: none;
+        }
+
+        body {
+            padding-bottom: 30px;
+        }
+        *,
+        *:before, 
+        *:after {
+            box-sizing: border-box;
+        }
+
+        ul {
+            margin: 0;
+            padding: 15px 15px 0 15px;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f8ff; /* 연한 블루톤 배경 */
+        }
+
+        .container {
+            margin: 0 auto;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;            
+            width: 100%;
+        }
+
+        .chat {
+            width: 100%;
+            color: #333;
+            border: 2px solid #a0c4ff; /* 블루톤 테두리 */
+            max-width: 430px;
+            margin: 0 auto;
+            border-radius: 15px;
+            background-color: white;
+            box-shadow: 0 14px 28px rgba(160, 196, 255, 0.25), 0 10px 10px rgba(160, 196, 255, 0.22);
+        }
+
+        .chat .chat-header {
+            display: flex;
+            padding: 5px 0 7px 0;
+            border-bottom: 4px solid white;
+            align-items: center;
+            justify-content: center;
+            background-color: #a0c4ff; /* 블루톤 헤더 배경 */
+        }
+        
+        .chat .chat-header .chat-about {
+            margin-left: 20px;
+            font-size: 35px;            
+            font-family: 'Do Hyeon';
+            text-align: center;
+            color: white; /* 헤더 텍스트 색상 */
+        }
+        
+        .chat .chat-history {
+            padding: 10px 0px 10px 0px;
+            border-bottom: 5px solid white;
+            scrollbar-width: none;
+            overflow-y: auto;
+            height: 575px;
+        }
+
+        .chat .chat-history::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chat .chat-history .message-data {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .chat .chat-history .message-data-time {
+            font-size: 14px;
+        }
+
+        .chat .chat-history .message {
+            color: #333;
+            padding: 18px 20px;
+            line-height: 22px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            width: 100%;
+            position: relative;
+        }
+
+        .chat .chat-history .my-message {
+            background: #dbe9ff; /* 연한 블루톤 메시지 배경 */
+            padding: 10px 15px;
+            font-size: 15px;    
+            width: 90%;
+            color: #003f8a; /* 진한 블루톤 텍스트 */
+        }
+
+        .chat .chat-history .other-message {
+            background: #e8f0ff; /* 상대방 메시지 배경 */
+            padding: 10px 15px;
+            font-size: 15px;
+            width: 90%;
+            color: #002d62;
+        }
+
+        .chat .chat-message {
+            padding: 5px 15px 0px 15px;
+            background-color: #a0c4ff; /* 입력 영역 배경 */
+        }
+
+        .chat .chat-message textarea {
+            width: 100%;
+            border: none;
+            padding: 10px 20px;
+            font: 14px/22px "Lato", Arial, sans-serif;
+            border-radius: 15px;
+            resize: none;
+            margin-bottom: 20px;
+            background-color: white;
+        }
+
+        .chat .chat-message textarea:focus {
+            outline: none;
+            border: 2px solid #003f8a; /* 포커스 시 블루톤 테두리 */
+        }
+
+        .align-right {
+            text-align: right;
+            float: right;
+        }
+
+        .float-right {
+            float: right;
+            margin-right: 10px;
+        }
+
+        .float-left {
+            float: left;
+            margin-left: 10px;
+        }
+
+        .clearfix:after {
+            visibility: hidden;
+            display: block;
+            font-size: 0;
+            content: " ";
+            clear: both;
+        }
+
+        .face-image {
+            position: relative;
+            top: 0.5rem;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+        }
+
+        /* 로딩 애니메이션 색상 변경 */
+        .loading-dots span {
+            background-color: #00509e;
+        }
+
+        .info {
+            display: block;
+            height: 1.2rem;
+            font-size: 12px;
+            color: #003f8a;
+            font-weight: bolder;
+        }
+
+        /* 기타 스타일은 그대로 유지 */
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+</head>
+
+<body>
+    <div class="container clearfix">
+        <div class="chat">
+            <div class="chat-header clearfix">
+                <img style="width:60px; border-radius:50px; margin-left:10px;" src="{{ url_for('static', filename='images/logo.png') }}" alt="avatar" />
+                <div class="chat-about">내 찐친 고비</div>
+            </div> <!-- end chat-header -->
+
+            <div class="chat-history"> 
+                <ul style="list-style:none;">
+
+                </ul>
+            </div> <!-- end chat-history -->
+
+            <!-- 기존의 chat-message 영역에서 버튼 부분을 수정합니다 -->
+            <div class="chat-message">
+                <span class="info"></span>
+                <div class="input-wrapper">
+                    <textarea name="message-to-send" id="message-to-send" placeholder="메시지를 입력하세요." rows="1"></textarea>
+                    <label for="image-upload" class="custom-file-upload">
+                        <i class="fa fa-paperclip"></i>
+                    </label>
+                    <input type="file" id="image-upload">
+                    <button id="send"><i class="fa fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+        </div> <!-- end chat -->
+    </div> <!-- end container -->
+    <audio id="audioPlayer" controls style="display:none"></audio>
+    
+     <script id="message-template" type="text/x-handlebars-template">
+         {% raw %}
+        <li class="clearfix">
+            <div class="message-data align-right">                
+                <span class="message-data-name" >나</span>
+                <span class="message-data-time" >Today</span> &nbsp; &nbsp;                
+            </div>
+            <div class="message my-message float-right">
+                {{messageOutput}}
+                {{#if imageUrl}}
+                    <img src="{{imageUrl}}" alt="이미지 미리보기" style="max-width: 250px; display: block; margin: 10px;">
+                {{/if}}
+            </div>
+      </li>
+      {% endraw %}
+    </script>
+
+    <script id="message-response-template" type="text/x-handlebars-template">
+        {% raw %}
+        <li class="clearfix">
+            <div class="message-data">
+                <img src="/static/images/jjinchin.png" class="face-image">
+                <span class="message-data-name">내 찐친</span>
+                <span class="message-data-time">Today</span>
+            </div>
+            <div class="message other-message float-left">
+                {{#if loading}}
+                    <div class="loading-dots"><span></span><span></span><span></span></div>
+                {{else}}
+                    {{{messageOutput}}}
+                    {{#if imageUrl}}
+                        <div style="display: flex; justify-content: center; align-items: center;"> 
+                            <img src="{{imageUrl}}" alt="Uploaded Image" style="max-width: 200px; display: block; margin: 10px;">
+                        </div>
+                    {{/if}}
+					{{#if pythonCode}}
+                        사용한 파이썬 코드는 다음이니까 참고해!
+                        <div class="python-code">{{pythonCode}}</div>
+                    {{/if}}
+                {{/if}}                
+            </div>
+        </li>      
+        {% endraw %}
+    </script>
+    <script>
+        (function () {
+            // 비동기로 응답을 가져오는 함수
+            async function fetchResponse(formData) {
+                // 서버에 '/chat-api'로 POST 요청을 보냄
+                const response = await fetch("/chat-api", {
+                    method: "POST",
+                    body: formData
+                });
+
+                // 응답이 성공적이지 않으면 에러를 발생시킴
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // JSON 형식으로 데이터를 받음
+                const data = await response.json();
+                return data;
+            }
+
+            // 채팅 UI 객체
+            var chat = {
+                messageToSend: '', // 보내려는 메시지 저장
+                imageToSend: null, // 보내려는 이미지 저장
+                // 초기화 함수
+                init: function () {
+                    this.cacheDOM(); // DOM 요소 캐싱
+                    this.bindEvents(); // 이벤트 바인딩
+                    this.initDragAndDrop(); // 드래그 앤 드롭 초기화
+                },
+
+                // DOM 요소를 캐싱하여 나중에 쉽게 접근할 수 있도록 함
+                cacheDOM: function () {
+                    this.chatHistory = document.querySelector('.chat-history'); // 채팅 기록 영역
+                    this.button = document.querySelector('#send'); // 전송 버튼
+                    this.textarea = document.getElementById('message-to-send'); // 메시지 입력창
+                    this.chatHistoryList = this.chatHistory.querySelector('ul'); // 채팅 기록 리스트
+                    this.fileInput = document.getElementById('image-upload'); // 이미지 업로드 input
+                },
+
+                // 필요한 이벤트를 바인딩함
+                bindEvents: function () {
+                    this.button.addEventListener('click', this.addMessage.bind(this)); // 전송 버튼 클릭 시 메시지 추가
+                    this.textarea.addEventListener('keyup', this.addMessageEnter.bind(this)); // Enter 키를 누를 때 메시지 추가
+                    this.textarea.addEventListener('paste', this.handlePaste.bind(this)); // 클립보드에 있는 이미지 붙여넣기 처리
+                    this.fileInput.addEventListener('change', this.previewImage.bind(this)); // 파일 업로드 시 이미지 미리보기
+                },
+
+                // 드래그 앤 드롭 기능 초기화
+                initDragAndDrop: function () {
+                    var dropArea = document.querySelector('body'); // 드래그 앤 드롭할 수 있는 영역은 'body'
+                    if (!dropArea) {
+                        console.error('Drop area not found'); // 드롭 영역이 없을 경우 에러 처리
+                        return;
+                    }
+
+                    // 드래그 이벤트와 관련된 기본 동작을 막음
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, this.preventDefaults, false);
+                    });
+
+                    dropArea.addEventListener('drop', this.handleDrop.bind(this), false); // 드롭 이벤트 처리
+                },
+
+                // 기본 동작을 막는 함수
+                preventDefaults: function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                },
+
+                // 파일을 드롭했을 때 호출되는 함수
+                handleDrop: function (e) {
+                    let dt = e.dataTransfer;
+                    let files = dt.files; // 드롭된 파일들
+
+                    this.handleFiles(files); // 파일 처리
+                },
+
+                // 파일을 처리하는 함수
+                handleFiles: function (files) {
+                    ([...files]).forEach(this.uploadFile.bind(this)); // 각 파일을 업로드 처리
+                },
+
+                // 파일을 업로드하는 함수
+                uploadFile: function (file) {
+                    var fileInput = document.getElementById('image-upload'); // 이미지 업로드 input
+                    var dataTransfer = new DataTransfer(); // 데이터 전송 객체 생성
+                    dataTransfer.items.add(file); // 파일 추가
+                    fileInput.files = dataTransfer.files; // 업로드된 파일을 input에 설정
+
+                    this.previewImage(); // 이미지 미리보기
+                },
+
+                // 클립보드에서 이미지가 붙여넣기 될 때 호출되는 함수
+                handlePaste: function (event) {
+                    const clipboardItems = event.clipboardData.items;
+                    for (let i = 0; i < clipboardItems.length; i++) {
+                        const item = clipboardItems[i];
+                        if (item.type.indexOf("image") !== -1) {
+                            const imageFile = item.getAsFile(); // 클립보드의 이미지 파일 가져오기
+                            this.previewClipboardImage(imageFile); // 클립보드 이미지 미리보기
+                            break;
+                        }
+                    }
+                },
+
+                // 클립보드에서 가져온 이미지 미리보기
+                previewClipboardImage: function (imageFile) {
+                    if (imageFile) {
+                        const imageUrl = URL.createObjectURL(imageFile); // 이미지 URL 생성
+                        this.imageToSend = imageUrl; // 보내려는 이미지 설정
+                        this.render('', imageUrl, null, true, true); // 이미지를 렌더링 (isPreview를 true로 설정)
+
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(imageFile); // 이미지 파일을 input에 설정
+                        this.fileInput.files = dataTransfer.files;
+                    }
+                },
+
+                // 업로드된 이미지 미리보기
+                previewImage: function () {
+                    this.scrollToBottom(); // 스크롤을 최하단으로 이동
+                    const imageFile = this.fileInput.files[0]; // 파일 업로드 input에서 파일 가져오기
+                    if (imageFile) {
+                        const imageUrl = URL.createObjectURL(imageFile); // 이미지 URL 생성
+                        this.imageToSend = imageUrl; // 보내려는 이미지 설정
+                        this.render('', imageUrl, null, true, true); // 이미지를 렌더링 (isPreview를 true로 설정)
+                    }
+                },
+
+                // 메시지를 추가하는 함수
+                addMessage: async function () {
+                    const formData = new FormData(); // 폼 데이터 생성
+                    this.messageToSend = this.textarea.value.trim(); // 입력된 메시지 가져오기
+                    formData.append('message', this.messageToSend); // 메시지를 폼 데이터에 추가
+                    const imageFile = this.fileInput.files[0]; // 업로드된 이미지 파일 가져오기
+                    if (imageFile) {
+                        formData.append('image', imageFile); // 이미지 파일을 폼 데이터에 추가
+                    }
+
+                    let imageUrl = this.imageToSend;
+
+                    // 미리보기 요소 제거
+                    const previewElements = document.querySelectorAll('[data-preview="true"]');
+                    previewElements.forEach(element => element.remove());
+
+                    // 메시지를 렌더링 (실제 메시지로)
+                    this.render(this.messageToSend, imageUrl, null, true);
+
+                    // 이미지 관련 필드 초기화
+                    this.fileInput.value = '';
+                    this.imageToSend = null;
+
+                    const showBubblePromise = this.showBubbleAfterSeconds(500); // 500ms 후에 로딩 애니메이션 표시
+                    const waitPromise = this.waitSeconds(3500); // 3500ms 대기
+                    const response = await fetchResponse(formData); // 서버로 메시지 전송 후 응답 받기
+                    await showBubblePromise; // 로딩 애니메이션이 나타날 때까지 대기
+                    await waitPromise; // 응답을 기다림
+
+                    if (response.response_message) {
+                        this.showResponse(response.response_message); // 응답 메시지를 표시
+                    }
+                    if (response.image) {
+                        this.render('', response.image, null, false); // 응답 이미지가 있으면 표시
+                    }
+                },
+
+                // Enter 키를 눌렀을 때 메시지를 추가하는 함수
+                addMessageEnter: function (event) {
+                    if (event.keyCode === 13) { // Enter 키의 keyCode는 13
+                        event.preventDefault();
+                        this.addMessage(); // 메시지 추가
+                    }
+                },
+
+                // 스크롤을 채팅 창의 최하단으로 이동시키는 함수
+                scrollToBottom: function () {
+                    this.chatHistory.scrollTop = this.chatHistory.scrollHeight;
+                },
+
+                // 지연을 주는 함수 (ms 단위)
+                waitSeconds: async function (delay) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            resolve();
+                        }, delay);
+                    });
+                },
+
+                // 일정 시간이 지난 후 로딩 애니메이션을 보여주는 함수
+                showBubbleAfterSeconds: async function (delay) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            const templateId = "#message-response-template"; // 핸들바 템플릿 ID
+                            const template = Handlebars.compile(document.querySelector(templateId).innerHTML); // 템플릿 컴파일
+                            const context = {
+                                loading: true, // 로딩 중 표시
+                                time: this.getCurrentTime() // 현재 시간 설정
+                            };
+                            var loadingHtml = template(context); // 로딩 HTML 생성
+                            this.chatHistoryList.insertAdjacentHTML('beforeend', loadingHtml); // 채팅 창에 추가
+                            this.scrollToBottom(); // 스크롤을 최하단으로 이동
+                            resolve();
+                        }, delay);
+                    });
+                },
+
+                // 응답 메시지를 표시하는 함수
+                showResponse: function (message) {
+                    this.scrollToBottom();
+                    const templateId = "#message-response-template"; // 응답 템플릿 ID
+                    let templateSource = document.querySelector(templateId).innerHTML;
+                    const template = Handlebars.compile(templateSource); // 템플릿 컴파일
+                    const context = {
+                        messageOutput: message, // 응답 메시지
+                        time: this.getCurrentTime() // 현재 시간
+                    };
+                    let htmlString = template(context);
+                    document.querySelector('.chat-history > ul > li:last-child').innerHTML = htmlString; // 마지막 리스트 항목을 응답으로 업데이트
+                    this.scrollToBottom();
+                },
+
+                // 메시지 및 이미지를 렌더링하는 함수
+                render: function (message, imageUrl, pythonCode, isUser, isPreview = false) {
+                    const templateId = isUser ? "#message-template" : "#message-response-template"; // 사용자 또는 응답 템플릿 결정
+                    const template = Handlebars.compile(document.querySelector(templateId).innerHTML);
+
+                    const context = {
+                        messageOutput: message,
+                        imageUrl: imageUrl,
+                        pythonCode: pythonCode,
+                        time: this.getCurrentTime()
+                    };
+
+                    let htmlString = template(context);
+
+                    this.chatHistoryList.insertAdjacentHTML('beforeend', htmlString); // 메시지 렌더링
+                    this.scrollToBottom();
+
+                    // 미리보기인 경우 마지막으로 추가된 요소에 data-preview 속성을 추가
+                    if (isPreview) {
+                        const lastMessage = this.chatHistoryList.lastElementChild;
+                        if (lastMessage) {
+                            lastMessage.setAttribute('data-preview', 'true');
+                        }
+                    }
+
+                    if (isUser && !isPreview) {
+                        this.textarea.value = ''; // 입력창 초기화
+                    }
+                },
+
+                // 현재 시간을 가져오는 함수
+                getCurrentTime: function () {
+                    let currentDate = new Date();
+                    return currentDate.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }); // 'ko-KR' 로케일 형식으로 날짜를 반환
+                }
+            };
+
+            chat.init(); // 채팅 UI 초기화
+        })();
+
+    </script>
+    
+    
+
+</body>
+
+</html>

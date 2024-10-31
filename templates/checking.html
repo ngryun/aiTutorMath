@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대화 목록</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            }
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chat-item {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+        .chat-bot {
+            flex-direction: row;
+        }
+        .chat-user {
+            flex-direction: row-reverse;
+        }
+        .message {
+            max-width: 70%;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 0 10px;
+        }
+        .bot-message {
+            background: #f0f0f0;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+        }
+        .meta {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .user-message .meta {
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <h1>대화 목록</h1>
+    <div class="chat-container">
+        {% for chat in chats %}
+        <div class="chat-item {% if chat.role == 'assistant' %}chat-bot{% else %}chat-user{% endif %}">
+            <div class="message {% if chat.role == 'assistant' %}bot-message{% else %}user-message{% endif %}">
+                {{ chat.content | safe }}
+                <div class="meta">
+                    {{ chat.date }} | ID: {{ chat.Userid }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        window.onload = function() {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+    </script>
+</body>
+</html>

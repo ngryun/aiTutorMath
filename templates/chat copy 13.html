@@ -1,0 +1,542 @@
+<!DOCTYPE html> 
+<html lang="en">  
+
+<head>  
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- MathJax Library for LaTeX Rendering -->
+    
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true,
+                packages: {'[+]': ['noerrors']}
+            },
+            chtml: {
+                scale: 1.0,
+                minScale: 1.0,
+                matchFontHeight: true
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax initial typesetting complete');
+                    });
+                }
+            }
+        };
+    </script>
+
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="preload stylesheet" as="style" href='https://fonts.googleapis.com/css2?family=Gothic+A1:wght@200&family=Nanum+Gothic&family=Nanum+Myeongjo&family=Noto+Sans+KR:wght@400&family=Roboto:wght@100&display=swap'>    
+
+    <title>민지의 chatbot</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Lato:400,700');
+        @import url('https://fonts.googleapis.com/css?family=Do+Hyeon:400');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
+
+        @font-face {
+            font-family: 'NanumGothic';
+            font-style: normal;
+            src: url("/fonts/Nanum_Gothic/NanumGothic-Regular.ttf");
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border-radius: 25px;
+            padding: 5px 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat .chat-message textarea {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            font: 14px/22px "Lato", Arial, sans-serif;
+            border-radius: 25px;
+            resize: none;
+            margin-bottom: 0;
+            outline: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            cursor: pointer;
+            margin-right: 10px;
+            color: #003f8a;
+            font-size: 20px;
+        }
+
+        #image-upload {
+            display: none;
+        }
+
+        #send {
+            background: none;
+            border: none;
+            color: #003f8a;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        #send:hover {
+            color: #00509e;
+        }
+
+        .chat .chat-message {
+            padding: 10px 15px;
+            background-color: #a0c4ff;
+        }
+
+        body {
+            padding-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            background-color: #f0f8ff;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            box-sizing: border-box;
+        }
+
+        .chat {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #a0c4ff;
+            background-color: white;
+            box-shadow: 0 14px 28px rgba(160, 196, 255, 0.25), 0 10px 10px rgba(160, 196, 255, 0.22);
+        }
+
+        .chat .chat-header {
+            display: flex;
+            padding: 5px 0;
+            align-items: center;
+            justify-content: center;
+            background-color: #a0c4ff;
+        }
+        
+        .chat .chat-header .chat-about {
+            margin-left: 20px;
+            font-size: 35px;            
+            font-family: 'Do Hyeon';
+            text-align: center;
+            color: white;
+        }
+        
+        .chat .chat-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            border-bottom: 5px solid white;
+            scrollbar-width: none;
+        }
+
+        .chat .chat-history::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chat .chat-history .message {
+            color: #333;
+            padding: 0 20px 18px;
+            line-height: 22px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            width: 100%;
+            white-space: pre-line;
+        }
+
+        .chat .chat-history .my-message {
+            background: #dbe9ff;
+            padding: 10px 15px;
+            font-size: 15px;    
+            width: 90%;
+            color: #003f8a;
+        }
+
+        .chat .chat-history .other-message {
+            background: #e8f0ff;
+            padding: 10px 15px;
+            font-size: 15px;
+            width: 90%;
+            color: #002d62;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .align-right {
+            text-align: right;
+        }
+
+        .face-image {
+            position: relative;
+            top: 0.5rem;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+        }
+
+        .mathjax-equation {
+            font-size: 1.1em; 
+            line-height: 1.5;  
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+</head>
+
+<body>
+    <div class="container clearfix">
+        <div class="chat">
+            <div class="chat-header clearfix">
+                <img style="width:60px; border-radius:50px; margin-left:10px;" src="{{ url_for('static', filename='images/logo.png') }}" alt="avatar" />
+                <div class="chat-about">내 찐친 고비</div>
+            </div>
+
+            <div class="chat-history"> 
+                <ul style="list-style:none;"></ul>
+            </div>
+
+            <div class="chat-message">
+                <span class="info"></span>
+                <div class="input-wrapper">
+                    <textarea name="message-to-send" id="message-to-send" placeholder="메시지를 입력하세요." rows="1"></textarea>
+                    <label for="image-upload" class="custom-file-upload">
+                        <i class="fa fa-paperclip"></i>
+                    </label>
+                    <input type="file" id="image-upload">
+                    <button id="send"><i class="fa fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <audio id="audioPlayer" controls style="display:none"></audio>
+    
+    <script id="message-template" type="text/x-handlebars-template">
+         {% raw %}
+         <li class="clearfix">
+            <div class="message-data align-right">                
+                <span class="message-data-name">나</span>
+                <span class="message-data-time">Today</span> &nbsp; &nbsp;                
+            </div>
+            <div class="message my-message float-right">{{messageOutput}}{{#if imageUrl}}<img src="{{imageUrl}}" alt="이미지 미리보기" style="max-width: 250px; display: block; margin: 10px;">{{/if}}</div>
+        </li>
+      {% endraw %}
+    </script>
+
+    <script id="message-response-template" type="text/x-handlebars-template">
+        {% raw %}
+        <li class="clearfix">
+            <div class="message-data">
+                <img src="/static/images/jjinchin.png" class="face-image">
+                <span class="message-data-name">내 찐친</span>
+                <span class="message-data-time">Today</span>
+            </div>
+            <div class="message other-message float-left {{#if containsEquation}}mathjax-equation{{/if}}">
+                {{#if loading}}
+                <div class="loading-dots"><span></span><span></span><span></span></div>
+                {{else}}
+                {{{messageOutput}}}{{#if imageUrl}}<div style="display: flex; justify-content: center; align-items: center;"><img src="{{imageUrl}}" alt="Uploaded Image" style="max-width: 200px; display: block; margin: 10px;"></div>{{/if}}
+                {{#if pythonCode}}사용한 파이썬 코드는 다음이니까 참고해!<div class="python-code">{{pythonCode}}</div>{{/if}}
+                {{/if}}
+            </div>
+        </li>  
+        {% endraw %}
+    </script>
+
+    <script>
+        var threadid = "{{ threadid|default('') }}";
+        
+        (function () {
+            const MAX_FILE_SIZE = 1 * 1024 * 1024;
+            const MAX_DIMENSION = 800;
+
+            async function fetchResponse(formData) {
+                const response = await fetch("/chat-api", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data;
+            }
+
+            var chat = {
+                messageToSend: '',
+                imageToSend: null,
+                init: function () {
+                    this.cacheDOM();
+                    this.bindEvents();
+                    this.initDragAndDrop();
+                },
+
+                cacheDOM: function () {
+                    this.chatHistory = document.querySelector('.chat-history');
+                    this.button = document.querySelector('#send');
+                    this.textarea = document.getElementById('message-to-send');
+                    this.chatHistoryList = this.chatHistory.querySelector('ul');
+                    this.fileInput = document.getElementById('image-upload');
+                },
+
+                bindEvents: function () {
+                    this.button.addEventListener('click', this.addMessage.bind(this));
+                    this.textarea.addEventListener('keyup', this.addMessageEnter.bind(this));
+                    this.fileInput.addEventListener('change', this.previewImage.bind(this));
+                },
+
+                initDragAndDrop: function () {
+                    var dropArea = document.querySelector('body');
+                    if (!dropArea) {
+                        console.error('Drop area not found');
+                        return;
+                    }
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, this.preventDefaults, false);
+                    });
+                    dropArea.addEventListener('drop', this.handleDrop.bind(this), false);
+                },
+
+                preventDefaults: function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                },
+
+                handleDrop: function (e) {
+                    let dt = e.dataTransfer;
+                    let files = dt.files;
+                    this.handleFiles(files);
+                },
+
+                handleFiles: function (files) {
+                    ([...files]).forEach(this.uploadFile.bind(this));
+                },
+
+                uploadFile: function (file) {
+                    var dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    this.fileInput.files = dataTransfer.files;
+                    this.previewImage();
+                },
+
+                resizeImage: function (file, maxSize, callback, quality = 0.7) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const img = new Image();
+                        img.onload = function () {
+                            let width = img.width;
+                            let height = img.height;
+
+                            const originalMaxDimension = Math.max(width, height);
+
+                            let MAX_DIMENSION = originalMaxDimension > 4000 ? 800 : 800;
+
+                            if (width > height) {
+                                if (width > MAX_DIMENSION) {
+                                    height *= MAX_DIMENSION / width;
+                                    width = MAX_DIMENSION;
+                                }
+                            } else {
+                                if (height > MAX_DIMENSION) {
+                                    width *= MAX_DIMENSION / height;
+                                    height = MAX_DIMENSION;
+                                }
+                            }
+
+                            const canvas = document.createElement('canvas');
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext("2d");
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            canvas.toBlob(function (blob) {
+                                console.log('압축된 이미지 용량:', (blob.size / 1024).toFixed(2), 'KB');
+                                if (blob.size > maxSize && quality > 0.1) {
+                                    this.resizeImage(file, maxSize, callback, quality - 0.1);
+                                } else {
+                                    callback(blob);
+                                }
+                            }.bind(this), file.type, quality);
+                        }.bind(this);
+                        img.src = event.target.result;
+                    }.bind(this);
+                    reader.readAsDataURL(file);
+                },
+
+                previewImage: function () {
+                    this.scrollToBottom();
+                    const imageFile = this.fileInput.files[0];
+                    if (imageFile) {
+                        this.resizeImage(imageFile, MAX_FILE_SIZE, (blob) => {
+                            const imageUrl = URL.createObjectURL(blob);
+                            this.imageToSend = imageUrl;
+                            this.render('', imageUrl, null, true, true);
+
+                            const newFile = new File([blob], imageFile.name, { type: imageFile.type });
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(newFile);
+                            this.fileInput.files = dataTransfer.files;
+                        });
+                    }
+                },
+
+                addMessage: async function () {
+                    const formData = new FormData();
+                    this.messageToSend = this.textarea.value.trim();
+                    formData.append('message', this.messageToSend);
+                    formData.append('threadid', threadid);
+                    const imageFile = this.fileInput.files[0];
+                    if (imageFile) {
+                        formData.append('image', imageFile);
+                    }
+
+                    let imageUrl = this.imageToSend;
+                    const previewElements = document.querySelectorAll('[data-preview="true"]');
+                    previewElements.forEach(element => element.remove());
+
+                    this.render(this.messageToSend, imageUrl, null, true);
+                    this.fileInput.value = '';
+                    this.imageToSend = null;
+
+                    const showBubblePromise = this.showBubbleAfterSeconds(500);
+                    const waitPromise = this.waitSeconds(3500);
+                    const response = await fetchResponse(formData);
+                    await showBubblePromise;
+                    await waitPromise;
+
+                    if (response.response_message) {
+                        this.showResponse(response.response_message);
+                    }
+                    if (response.image) {
+                        this.render('', response.image, null, false);
+                    }
+                },
+
+                addMessageEnter: function (event) {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                        event.preventDefault();
+                        this.addMessage();
+                    }
+                },
+
+                scrollToBottom: function () {
+                    this.chatHistory.scrollTop = this.chatHistory.scrollHeight;
+                },
+
+                waitSeconds: async function (delay) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            resolve();
+                        }, delay);
+                    });
+                },
+
+                showBubbleAfterSeconds: async function (delay) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            const templateId = "#message-response-template";
+                            const template = Handlebars.compile(document.querySelector(templateId).innerHTML);
+                            const context = {
+                                loading: true,
+                                time: this.getCurrentTime()
+                            };
+                            var loadingHtml = template(context);
+                            this.chatHistoryList.insertAdjacentHTML('beforeend', loadingHtml);
+                            this.scrollToBottom();
+                            resolve();
+                        }, delay);
+                    });
+                },
+
+                showResponse: function (message) {
+                    this.scrollToBottom();
+                    const templateId = "#message-response-template";
+                    let templateSource = document.querySelector(templateId).innerHTML;
+                    const template = Handlebars.compile(templateSource);
+                    const context = {
+                        messageOutput: message,
+                        time: this.getCurrentTime()
+                    };
+                    let htmlString = template(context);
+                    document.querySelector('.chat-history > ul > li:last-child').innerHTML = htmlString;
+                    this.scrollToBottom();
+
+                    setTimeout(() => {
+                        MathJax.typesetPromise().then(() => {
+                            console.log('MathJax typesetting complete in showResponse');
+                        }).catch((err) => console.log('MathJax typesetting failed in showResponse: ' + err.message));
+                    }, 0);
+                },
+
+                render: function (message, imageUrl, pythonCode, isUser, isPreview = false) {
+                    const templateId = isUser ? "#message-template" : "#message-response-template";
+                    const template = Handlebars.compile(document.querySelector(templateId).innerHTML);
+                    message = message.trim();
+                    const context = {
+                        messageOutput: message,
+                        imageUrl: imageUrl,
+                        pythonCode: pythonCode,
+                        time: this.getCurrentTime(),
+                        containsEquation: /\\(.+\\)|\$\$/.test(message)
+                    };
+
+                    let htmlString = template(context);
+
+                    this.chatHistoryList.insertAdjacentHTML('beforeend', htmlString);
+                    this.scrollToBottom();
+
+                    if (isPreview) {
+                        const lastMessage = this.chatHistoryList.lastElementChild;
+                        if (lastMessage) {
+                            lastMessage.setAttribute('data-preview', 'true');
+                        }
+                    }
+
+                    if (isUser && !isPreview) {
+                        this.textarea.value = '';
+                    }
+
+                    setTimeout(() => {
+                        MathJax.typesetPromise().then(() => {
+                            console.log('MathJax typesetting complete in render');
+                        }).catch((err) => console.log('MathJax typesetting failed in render: ' + err.message));
+                    }, 0);
+                },
+
+                getCurrentTime: function () {
+                    let currentDate = new Date();
+                    return currentDate.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+                }
+            };
+
+            chat.init();
+        })();
+    </script>
+</body>
+</html>
