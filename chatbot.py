@@ -201,7 +201,7 @@ class Chatbot:
                 ).model_dump()            
         except Exception as e:
             print(f"Exception 오류({type(e)}) 발생:{e}")
-            return makeup_response("[내 찐친 챗봇에 문제가 발생했습니다. 잠시 뒤 이용해주세요]")
+            return makeup_response("문제가 발생했습니다.")
         return response
     
     def send_request(self):
