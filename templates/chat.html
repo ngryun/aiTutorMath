@@ -271,8 +271,38 @@
             height: 30px;
         }
 
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            padding: 10px;
+        }
+
         .loading-dots span {
+            width: 8px;
+            height: 8px;
             background-color: #00509e;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
         }
 
         .info {
@@ -386,13 +416,12 @@
         {% endraw %}
     </script>
     <script>
-        var threadid = "{{ threadid|default('') }}";  // threadid가 없을 경우 빈 문자열로 대체
-
+    
         (function () {
             const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
             // 최대 크기를 설정 (예: 800px)
             const MAX_DIMENSION = 800;
-
+    
             // 비동기로 응답을 가져오는 함수
             async function fetchResponse(formData) {
                 // 서버에 '/chat-api'로 POST 요청을 보냄
@@ -400,17 +429,17 @@
                     method: "POST",
                     body: formData
                 });
-
+    
                 // 응답이 성공적이지 않으면 에러를 발생시킴
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-
+    
                 // JSON 형식으로 데이터를 받음
                 const data = await response.json();
                 return data;
             }
-
+    
             // 채팅 UI 객체
             var chat = {
                 messageToSend: '', // 보내려는 메시지 저장
@@ -421,7 +450,7 @@
                     this.bindEvents(); // 이벤트 바인딩
                     this.initDragAndDrop(); // 드래그 앤 드롭 초기화
                 },
-
+    
                 // DOM 요소를 캐싱하여 나중에 쉽게 접근할 수 있도록 함
                 cacheDOM: function () {
                     this.chatHistory = document.querySelector('.chat-history'); // 채팅 기록 영역
@@ -430,7 +459,7 @@
                     this.chatHistoryList = this.chatHistory.querySelector('ul'); // 채팅 기록 리스트
                     this.fileInput = document.getElementById('image-upload'); // 이미지 업로드 input
                 },
-
+    
                 // 필요한 이벤트를 바인딩함
                 bindEvents: function () {
                     this.button.addEventListener('click', this.addMessage.bind(this)); // 전송 버튼 클릭 시 메시지 추가
@@ -438,7 +467,7 @@
                     this.textarea.addEventListener('paste', this.handlePaste.bind(this)); // 클립보드에 있는 이미지 붙여넣기 처리
                     this.fileInput.addEventListener('change', this.previewImage.bind(this)); // 파일 업로드 시 이미지 미리보기
                 },
-
+    
                 // 드래그 앤 드롭 기능 초기화
                 initDragAndDrop: function () {
                     var dropArea = document.querySelector('body'); // 드래그 앤 드롭할 수 있는 영역은 'body'
@@ -446,44 +475,44 @@
                         console.error('Drop area not found'); // 드롭 영역이 없을 경우 에러 처리
                         return;
                     }
-
+    
                     // 드래그 이벤트와 관련된 기본 동작을 막음
                     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                         dropArea.addEventListener(eventName, this.preventDefaults, false);
                     });
-
+    
                     dropArea.addEventListener('drop', this.handleDrop.bind(this), false); // 드롭 이벤트 처리
                 },
-
+    
                 // 기본 동작을 막는 함수
                 preventDefaults: function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                 },
-
+    
                 // 파일을 드롭했을 때 호출되는 함수
                 handleDrop: function (e) {
                     let dt = e.dataTransfer;
                     let files = dt.files; // 드롭된 파일들
-
+    
                     this.handleFiles(files); // 파일 처리
                 },
-
+    
                 // 파일을 처리하는 함수
                 handleFiles: function (files) {
                     ([...files]).forEach(this.uploadFile.bind(this)); // 각 파일을 업로드 처리
                 },
-
+    
                 // 파일을 업로드하는 함수
                 uploadFile: function (file) {
                     var fileInput = document.getElementById('image-upload'); // 이미지 업로드 input
                     var dataTransfer = new DataTransfer(); // 데이터 전송 객체 생성
                     dataTransfer.items.add(file); // 파일 추가
                     fileInput.files = dataTransfer.files; // 업로드된 파일을 input에 설정
-
+    
                     this.previewImage(); // 이미지 미리보기
                 },
-
+    
                 // 클립보드에서 이미지가 붙여넣기 될 때 호출되는 함수
                 handlePaste: function (event) {
                     const clipboardItems = event.clipboardData.items;
@@ -504,10 +533,10 @@
                         img.onload = function () {
                             let width = img.width;
                             let height = img.height;
-
+    
                             // 원본 이미지의 긴 변의 길이를 가져옵니다.
                             const originalMaxDimension = Math.max(width, height);
-
+    
                             // 원본 이미지의 크기에 따라 최대 해상도를 동적으로 결정합니다.
                             let MAX_DIMENSION;
                             if (originalMaxDimension > 4000) {
@@ -517,7 +546,7 @@
                             } else {
                                 MAX_DIMENSION = 800;
                             }
-
+    
                             // 이미지 크기 조정
                             if (width > height) {
                                 if (width > MAX_DIMENSION) {
@@ -530,19 +559,19 @@
                                     height = MAX_DIMENSION;
                                 }
                             }
-
+    
                             // 캔버스 생성 및 이미지 그리기
                             const canvas = document.createElement('canvas');
                             canvas.width = width;
                             canvas.height = height;
                             const ctx = canvas.getContext("2d");
                             ctx.drawImage(img, 0, 0, width, height);
-
+    
                             // 압축된 이미지 가져오기
                             canvas.toBlob(function (blob) {
                                 // 압축된 이미지의 크기 출력
                                 console.log('압축된 이미지 용량:', (blob.size / 1024).toFixed(2), 'KB');
-
+    
                                 // 만약 압축된 이미지가 maxSize를 초과하고 품질이 0.1보다 큰 경우, 품질을 낮춰서 다시 압축
                                 if (blob.size > maxSize && quality > 0.1) {
                                     console.log('이미지 용량이 아직 큽니다. 품질을 더 낮춰 압축합니다.');
@@ -558,7 +587,7 @@
                     }.bind(this);
                     reader.readAsDataURL(file);
                 },
-
+    
                 // 클립보드에서 가져온 이미지 미리보기
                 previewClipboardImage: function (imageFile) {
                     if (imageFile) {
@@ -567,7 +596,7 @@
                             const imageUrl = URL.createObjectURL(blob);
                             this.imageToSend = imageUrl;
                             this.render('', imageUrl, null, true, true);
-
+    
                             // 압축된 이미지를 파일로 변환하여 업로드
                             const newFile = new File([blob], imageFile.name, { type: imageFile.type });
                             const dataTransfer = new DataTransfer();
@@ -576,7 +605,7 @@
                         });
                     }
                 },
-
+    
                 // 업로드된 이미지 미리보기
                 previewImage: function () {
                     this.scrollToBottom();
@@ -587,7 +616,7 @@
                             const imageUrl = URL.createObjectURL(blob);
                             this.imageToSend = imageUrl;
                             this.render('', imageUrl, null, true, true);
-
+    
                             // 압축된 이미지를 파일로 변환하여 업로드
                             const newFile = new File([blob], imageFile.name, { type: imageFile.type });
                             const dataTransfer = new DataTransfer();
@@ -596,46 +625,81 @@
                         });
                     }
                 },
-
+    
+                // 입력 필드와 전송 버튼을 비활성화하는 함수
+                disableInput: function () {
+                    this.textarea.disabled = true;
+                    this.button.disabled = true;
+                    this.fileInput.disabled = true;
+                    // 버튼의 스타일을 변경하여 비활성화 상태를 시각적으로 표시할 수도 있습니다.
+                    this.button.style.cursor = 'not-allowed';
+                    this.button.style.opacity = '0.6';
+                },
+    
+                // 입력 필드와 전송 버튼을 활성화하는 함수
+                enableInput: function () {
+                    this.textarea.disabled = false;
+                    this.button.disabled = false;
+                    this.fileInput.disabled = false;
+                    // 버튼의 스타일을 원래대로 되돌립니다.
+                    this.button.style.cursor = 'pointer';
+                    this.button.style.opacity = '1';
+                },
+    
                 // 메시지를 추가하는 함수
                 addMessage: async function () {
-                    const formData = new FormData(); // 폼 데이터 생성
-                    this.messageToSend = this.textarea.value.trim(); // 입력된 메시지 가져오기
-                    formData.append('message', this.messageToSend); // 메시지를 폼 데이터에 추가
-
-                        // threadid 값을 폼 데이터에 추가
-                    formData.append('threadid', threadid);
-                    const imageFile = this.fileInput.files[0]; // 업로드된 이미지 파일 가져오기
+                    const formData = new FormData();
+                    this.messageToSend = this.textarea.value.trim();
+                    formData.append('message', this.messageToSend);
+                    
+                    const imageFile = this.fileInput.files[0];
                     if (imageFile) {
-                        // 이미지 파일의 크기 출력 (바이트 단위)
-                        console.log('전송할 이미지 용량:', imageFile.size, '바이트');
-                        formData.append('image', imageFile); // 이미지 파일을 폼 데이터에 추가
+                        formData.append('image', imageFile);
                     }
-
+    
                     let imageUrl = this.imageToSend;
-
+    
                     // 미리보기 요소 제거
                     const previewElements = document.querySelectorAll('[data-preview="true"]');
                     previewElements.forEach(element => element.remove());
-
-                    // 메시지를 렌더링 (실제 메시지로)
+    
+                    // 사용자 메시지 렌더링
                     this.render(this.messageToSend, imageUrl, null, true);
-
+    
+                    // 스피너 즉시 표시
+                    this.showLoadingSpinner();
+    
+                    // 입력 필드와 전송 버튼 비활성화
+                    this.disableInput();
+    
                     // 이미지 관련 필드 초기화
                     this.fileInput.value = '';
                     this.imageToSend = null;
-
-                    const showBubblePromise = this.showBubbleAfterSeconds(500); // 500ms 후에 로딩 애니메이션 표시
-                    const waitPromise = this.waitSeconds(3500); // 3500ms 대기
-                    const response = await fetchResponse(formData); // 서버로 메시지 전송 후 응답 받기
-                    await showBubblePromise; // 로딩 애니메이션이 나타날 때까지 대기
-                    await waitPromise; // 응답을 기다림
-
-                    if (response.response_message) {
-                        this.showResponse(response.response_message); // 응답 메시지를 표시
-                    }
-                    if (response.image) {
-                        this.render('', response.image, null, false); // 응답 이미지가 있으면 표시
+                    this.textarea.value = '';
+    
+                    try {
+                        // 서버로부터 응답 받기
+                        const response = await fetchResponse(formData);
+                        
+                        // 로딩 스피너가 있는 마지막 메시지 찾기
+                        const loadingMessage = this.chatHistoryList.querySelector('li:last-child .loading-dots');
+                        if (loadingMessage) {
+                            // 응답이 있을 경우 로딩 스피너를 응답으로 교체
+                            if (response.response_message) {
+                                this.showResponse(response.response_message);
+                            }
+                            // 응답 이미지가 있을 경우 표시
+                            if (response.image) {
+                                this.render('', response.image, null, false);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        // 에러 발생 시 로딩 메시지를 에러 메시지로 교체
+                        this.showResponse('죄송합니다. 오류가 발생했습니다.');
+                    } finally {
+                        // 응답 도착 후 입력 필드와 전송 버튼 활성화
+                        this.enableInput();
                     }
                 },
                 // Enter 키를 눌렀을 때 메시지를 추가하는 함수
@@ -645,13 +709,13 @@
                         this.addMessage(); // 메시지 추가
                     }
                 },
-
-
+    
+    
                 // 스크롤을 채팅 창의 최하단으로 이동시키는 함수
                 scrollToBottom: function () {
                     this.chatHistory.scrollTop = this.chatHistory.scrollHeight;
                 },
-
+    
                 // 지연을 주는 함수 (ms 단위)
                 waitSeconds: async function (delay) {
                     return new Promise(resolve => {
@@ -660,47 +724,50 @@
                         }, delay);
                     });
                 },
-
-                // 일정 시간이 지난 후 로딩 애니메이션을 보여주는 함수
-                showBubbleAfterSeconds: async function (delay) {
-                    return new Promise(resolve => {
-                        setTimeout(() => {
-                            const templateId = "#message-response-template"; // 핸들바 템플릿 ID
-                            const template = Handlebars.compile(document.querySelector(templateId).innerHTML); // 템플릿 컴파일
-                            const context = {
-                                loading: true, // 로딩 중 표시
-                                time: this.getCurrentTime() // 현재 시간 설정
-                            };
-                            var loadingHtml = template(context); // 로딩 HTML 생성
-                            this.chatHistoryList.insertAdjacentHTML('beforeend', loadingHtml); // 채팅 창에 추가
-                            this.scrollToBottom(); // 스크롤을 최하단으로 이동
-                            resolve();
-                        }, delay);
-                    });
+    
+                // 스피너를 즉시 표시하는 함수
+                showLoadingSpinner: function () {
+                    try {
+                        console.log('Loading spinner 표시'); // 로그 추가
+                        const templateId = "#message-response-template";
+                        const template = Handlebars.compile(document.querySelector(templateId).innerHTML);
+                        const context = {
+                            loading: true,
+                            time: this.getCurrentTime()
+                        };
+                        const loadingHtml = template(context);
+                        this.chatHistoryList.insertAdjacentHTML('beforeend', loadingHtml);
+                        this.scrollToBottom();
+                    } catch (error) {
+                        console.error('Handlebars 템플릿 컴파일 오류:', error);
+                    }
                 },
-
+    
                 // 응답 메시지를 표시하는 함수
                 showResponse: function (message) {
-                    this.scrollToBottom();
                     const templateId = "#message-response-template";
-                    let templateSource = document.querySelector(templateId).innerHTML;
-                    const template = Handlebars.compile(templateSource);
+                    const template = Handlebars.compile(document.querySelector(templateId).innerHTML);
                     const context = {
                         messageOutput: message,
-                        time: this.getCurrentTime()
+                        time: this.getCurrentTime(),
+                        containsEquation: /\\\(.+\\\)|\$\$/.test(message)
                     };
-                    let htmlString = template(context);
-                    document.querySelector('.chat-history > ul > li:last-child').innerHTML = htmlString;
-                    this.scrollToBottom();
-
-                    // MathJax 렌더링을 위한 지연 추가
-                    setTimeout(() => {
-                        MathJax.typesetPromise().then(() => {
-                            console.log('MathJax typesetting complete in showResponse');
-                        }).catch((err) => console.log('MathJax typesetting failed in showResponse: ' + err.message));
-                    }, 0);
+                    
+                    // 마지막 메시지(로딩 스피너)를 찾아서 교체
+                    const lastMessage = document.querySelector('.chat-history > ul > li:last-child');
+                    if (lastMessage) {
+                        lastMessage.innerHTML = template(context);
+                        this.scrollToBottom();
+                        
+                        // MathJax 렌더링
+                        setTimeout(() => {
+                            MathJax.typesetPromise()
+                                .then(() => console.log('MathJax typesetting complete in showResponse'))
+                                .catch((err) => console.log('MathJax typesetting failed in showResponse: ' + err.message));
+                        }, 0);
+                    }
                 },
-
+    
                 // 메시지 및 이미지를 렌더링하는 함수
                 render: function (message, imageUrl, pythonCode, isUser, isPreview = false) {
                     const templateId = isUser ? "#message-template" : "#message-response-template";
@@ -713,42 +780,43 @@
                         time: this.getCurrentTime(),
                         containsEquation: /\\\(.+\\\)|\$\$/.test(message) // 수식이 있는지 확인
                     };
-
+    
                     let htmlString = template(context);
-
+    
                     this.chatHistoryList.insertAdjacentHTML('beforeend', htmlString);
                     this.scrollToBottom();
-
+    
                     if (isPreview) {
                         const lastMessage = this.chatHistoryList.lastElementChild;
                         if (lastMessage) {
                             lastMessage.setAttribute('data-preview', 'true');
                         }
                     }
-
+    
                     if (isUser && !isPreview) {
                         this.textarea.value = ''; // clear input after message sent
                     }
-
+    
                     setTimeout(() => {
                         MathJax.typesetPromise().then(() => {
                             console.log('MathJax typesetting complete in render');
                         }).catch((err) => console.log('MathJax typesetting failed in render: ' + err.message));
                     }, 0);
                 },
-
-
+    
+    
                 // 현재 시간을 가져오는 함수
                 getCurrentTime: function () {
                     let currentDate = new Date();
                     return currentDate.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }); // 'ko-KR' 로케일 형식으로 날짜를 반환
                 }
             };
-
+    
             chat.init(); // 채팅 UI 초기화
         })();
-
+    
     </script>
+    
     
     
 
